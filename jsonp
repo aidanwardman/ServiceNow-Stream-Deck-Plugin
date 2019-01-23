@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+UI Page HTML
+
+Name: jsonp
+Category: General
+
+You must make this page public because you cannot do HTTP Basic Auth with JSONP request. Refer to
+Service Now Wiki on how to make the page public. http://wiki.servicenow.com/index.php?title=Making_a_Page_Public
+
+The actual authentication happens inside this script by proxying the request to another JSON API call.
+
+-->
+<j:jelly trim="false" xmlns:g2="null" xmlns:g="glide" xmlns:j2="null" xmlns:j="jelly:core">
+	<g:evaluate jelly="true" var="jvar_js">
+		<![CDATA[
+
+var js = "false";
+
+var request = new sn_ws.RESTMessageV2();
+request.setEndpoint(RP.getParameterValue("sysparm_api"));
+request.setHttpMethod("get"); // Do not use GET - bug: https://hi.service-now.com/kb_view.do?sysparm_article=KB0551589
+
+request.setBasicAuth(RP.getParameterValue("sysparm_user"), RP.getParameterValue("sysparm_password"));
+request.setRequestHeader("Accept", "application/json");
+
+var response = request.execute();
+js = response.getBody();
+
+js = RP.getParameterValue("sysparm_callback") + "(" + js + ");//";
+js;
+
+		]]>
+	</g:evaluate>
+	${jvar_js}
+</j:jelly>
